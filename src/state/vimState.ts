@@ -57,6 +57,8 @@ export class VimState implements vscode.Disposable {
    */
   public desiredColumn = 0;
 
+  public byteDesiredColomn = 0;
+
   public historyTracker: HistoryTracker;
 
   public easyMotion: IEasyMotion;

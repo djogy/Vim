@@ -308,7 +308,7 @@ class MoveDown extends BaseMovement {
     }
 
     if (position.line < vimState.document.lineCount - 1) {
-      return position.with({ character: vimState.desiredColumn }).getDown();
+      return position.getDown().getVisualCharFromByteChar(vimState.byteDesiredColomn);
     } else {
       return position;
     }
@@ -346,7 +346,7 @@ class MoveUp extends BaseMovement {
     }
 
     if (position.line > 0) {
-      return position.with({ character: vimState.desiredColumn }).getUp();
+      return position.getUp().getVisualCharFromByteChar(vimState.byteDesiredColomn);
     } else {
       return position;
     }
@@ -1176,7 +1176,7 @@ class MoveUpByScreenLineVisualBlock extends BaseMovement {
     vimState: VimState
   ): Promise<Position | IMovement> {
     if (position.line > 0) {
-      return position.with({ character: vimState.desiredColumn }).getUp();
+      return position.getUp().getVisualCharFromByteChar(vimState.byteDesiredColomn);
     } else {
       return position;
     }
@@ -1205,7 +1205,7 @@ class MoveDownByScreenLineVisualBlock extends BaseMovement {
     vimState: VimState
   ): Promise<Position | IMovement> {
     if (position.line < vimState.document.lineCount - 1) {
-      return position.with({ character: vimState.desiredColumn }).getDown();
+      return position.getDown().getVisualCharFromByteChar(vimState.byteDesiredColomn);
     } else {
       return position;
     }

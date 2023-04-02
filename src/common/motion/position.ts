@@ -120,6 +120,21 @@ export function sorted(p1: Position, p2: Position): [Position, Position] {
   return p1.isBefore(p2) ? [p1, p2] : [p2, p1];
 }
 
+/**
+ * @returns Is double-byte charactor or not.
+ */
+export function isDoubleByteCharacter(charCode: number): boolean {
+  if (
+    (charCode >= 0x2e80 && charCode <= 0xd7af) ||
+    (charCode >= 0xf900 && charCode <= 0xfaff) ||
+    (charCode >= 0xff01 && charCode <= 0xff5e)
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 declare module 'vscode' {
   interface Position {
     toString(): string;
@@ -210,6 +225,16 @@ declare module 'vscode' {
      * @returns a new Position at the end of this position's line.
      */
     getLineEnd(): Position;
+
+    /**
+     * @returns a new Position at visual from byte column.
+     */
+    getByteCharFromVisualChar(): Position;
+
+    /**
+     * @returns a new Position at byte width from visual.
+     */
+    getVisualCharFromByteChar(byteChar: number): Position;
 
     /**
      * @returns a new Position at the end of this Position's line, including the invisible newline character.
@@ -475,6 +500,58 @@ Position.prototype.getLineBeginRespectingIndent = function (
  */
 Position.prototype.getLineEnd = function (this: Position): Position {
   return new Position(this.line, TextEditor.getLineLength(this.line));
+};
+
+/**
+ * @returns a new Position at visual from byte column.
+ */
+Position.prototype.getByteCharFromVisualChar = function (this: Position): Position {
+  if (this.character === 0) {
+    return this;
+  } else {
+    const curText: string = TextEditor.getLine(this.line).text;
+    let byteChar: number = 0;
+
+    for (const mText of curText.substr(0, this.character)) {
+      const charCode = mText.charCodeAt(0);
+      // Judge single-byte charactor or double-byte character
+      if (isDoubleByteCharacter(charCode)) {
+        byteChar += 2;
+      } else {
+        byteChar += 1;
+      }
+    }
+
+    return new Position(this.line, byteChar);
+  }
+};
+
+/**
+ * @returns a new Position at visual from byte column.
+ */
+Position.prototype.getVisualCharFromByteChar = function (
+  this: Position,
+  byteChar: number
+): Position {
+  const curText: string = TextEditor.getLine(this.line).text;
+
+  let visualChar = 0;
+
+  for (const mText of curText) {
+    const charCode = mText.charCodeAt(0);
+    // Judge single-byte charactor or double-byte character
+    if (isDoubleByteCharacter(charCode)) {
+      byteChar -= 2;
+    } else {
+      byteChar -= 1;
+    }
+    visualChar += 1;
+    if (byteChar <= 0) {
+      break;
+    }
+  }
+
+  return new Position(this.line, visualChar);
 };
 
 /**

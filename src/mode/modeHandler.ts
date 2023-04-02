@@ -827,10 +827,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           this.vimState.desiredColumn = Number.POSITIVE_INFINITY;
         } else {
           this.vimState.desiredColumn = this.vimState.cursorStopPosition.character;
+          this.vimState.byteDesiredColomn =
+            this.vimState.cursorStopPosition.getByteCharFromVisualChar().character;
         }
       } else if (this.vimState.currentMode !== Mode.VisualBlock) {
         // TODO: explain why not VisualBlock
         this.vimState.desiredColumn = this.vimState.cursorStopPosition.character;
+        this.vimState.byteDesiredColomn =
+          this.vimState.cursorStopPosition.getByteCharFromVisualChar().character;
       }
     }
 

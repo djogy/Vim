@@ -211,8 +211,15 @@ export class TextEditor {
 
     cursor ??= vimState.cursors[0];
 
-    const topLeft = visualBlockGetTopLeftPosition(cursor.start, cursor.stop);
-    const bottomRight = visualBlockGetBottomRightPosition(cursor.start, cursor.stop);
+    // Compare from byte Column
+    const topLeft = visualBlockGetTopLeftPosition(
+      cursor.start.getByteCharFromVisualChar(),
+      cursor.stop.getByteCharFromVisualChar()
+    );
+    const bottomRight = visualBlockGetBottomRightPosition(
+      cursor.start.getByteCharFromVisualChar(),
+      cursor.stop.getByteCharFromVisualChar()
+    );
 
     const [itrStart, itrEnd] = reverse
       ? [bottomRight.line, topLeft.line]
@@ -226,13 +233,22 @@ export class TextEditor {
       reverse ? lineIndex-- : lineIndex++
     ) {
       const line = vimState.document.lineAt(lineIndex).text;
-      const endCharacter = runToLineEnd
-        ? line.length + 1
-        : Math.min(line.length, bottomRight.character + 1);
+
+      // get left column
+      const leftColumn = new Position(lineIndex, 0).getVisualCharFromByteChar(
+        topLeft.character
+      ).character;
+
+      // get right column
+      const rightColumn = new Position(lineIndex, 0).getVisualCharFromByteChar(
+        bottomRight.character
+      ).character;
+
+      const endCharacter = runToLineEnd ? line.length + 1 : Math.min(line.length, rightColumn + 1);
 
       yield {
-        line: line.substring(topLeft.character, endCharacter),
-        start: new Position(lineIndex, topLeft.character),
+        line: line.substring(leftColumn, endCharacter),
+        start: new Position(lineIndex, leftColumn),
         end: new Position(lineIndex, endCharacter),
       };
     }
